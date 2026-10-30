@@ -9,7 +9,8 @@ Editor: 6000.3.27f1, run via `Start-Process Unity.exe -Wait` from the repo root.
 | Project opens and compiles | PASS | `-batchmode -nographics -quit` exit 0; no `error CS` in log |
 | Packages resolve | PASS | URP 17.3.0, Input System 1.20.1, Test Framework 1.6.0, Cinemachine 3.1.5 (from registry) in `Library/PackageCache`; no resolve errors |
 | URP asset, scenes generated | PASS | `FoundationSetup.Apply` run twice, exit 0; `Bootstrap.unity`, `Sandbox.unity`, `URP_Asset.asset` created |
-| Input System only, force-text, 1/60 timestep | PASS | `activeInputHandler: 1`, `m_SerializationMode: 2`, Fixed Timestep rational ≈ 1/60 in the settings assets |
+| Input System only, force-text | PASS | `activeInputHandler: 1`, `m_SerializationMode: 2` |
+| 1/60 timestep | **CORRECTED (was a wrong PASS)** | The original entry said the saved rational was about 1/60. It was 0.0199999929 s (about 50 Hz); the setup's float write never applied. Found in `FoundationReview.md` F2, fixed 2026-10-30: saved value is now exactly 2352000 / 141120000 s = 1/60, checked by `ProjectSettingsTests` |
 | EditMode tests | PASS | `-runTests -testPlatform EditMode`: 1 total, 1 passed, 0 failed |
 | PlayMode test (Bootstrap loads Sandbox, ortho camera, 60 Hz step) | PASS | `-runTests -testPlatform PlayMode`: 1 total, 1 passed, 0 failed |
 | Windows build | PASS | `BuildWindows`: "Build Finished, Result: Success."; `Builds/Windows/WorldtreeLegacy.exe` exists (Win64 Mono, development) |

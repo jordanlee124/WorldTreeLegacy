@@ -26,6 +26,19 @@ Status: project opens, compiles, tests pass and a Windows build succeeds. See `V
 - `.gitignore` extended with `*.blend1`, `MemoryCaptures`, `Recordings`, `*.dmp`.
 - `git lfs install --local` was run in this checkout.
 
+## Unity YAML merge driver (once per checkout)
+`.gitattributes` selects `merge=unityyamlmerge` for scenes, prefabs and assets, but Git configuration is not committed, so each checkout needs the driver. Adjust the path to your editor install:
+
+```bash
+git config --local merge.unityyamlmerge.name "Unity SmartMerge (UnityYAMLMerge)"
+git config --local merge.unityyamlmerge.driver '"C:/Program Files/Unity/Hub/Editor/6000.3.27f1/Editor/Data/Tools/UnityYAMLMerge.exe" merge -h --force --fallback none %O %B %A %A'
+```
+
+Use a shell that keeps the inner double quotes (Git Bash); PowerShell 5.1 mangles them. `--force` is required because Git hands the tool extensionless temp files. Verified on a disposable repo (see `FoundationReview.md` F3).
+
+## Identity
+Product name is `Worldtree Legacy`; the build output is `Builds/Windows/WorldtreeLegacy.exe`. Company/publisher name is `Siregi` (chosen by the project owner). Changing the company or product name changes Unity's `persistentDataPath`, so settle it before saves exist.
+
 ## Reproducing the validation
 Run from the repo root (the setup was run twice, because the Input System switch needs a restart):
 

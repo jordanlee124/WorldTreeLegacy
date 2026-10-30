@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
 using UnityEditor;
@@ -7,6 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 using Worldtree.Presentation;
 
 namespace Worldtree.Editor
@@ -22,18 +24,43 @@ namespace Worldtree.Editor
         [MenuItem("Worldtree/Apply Foundation Setup")]
         public static void Apply()
         {
-            Directory.CreateDirectory(Scenes);
             Directory.CreateDirectory(Settings);
             SetupUrp();
             SetProjectSettings();
-            CreateBootstrap(BootstrapScene);
-            CreateSandbox(SandboxScene);
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene(BootstrapScene, true),
-                new EditorBuildSettingsScene(SandboxScene, true),
-            };
+            EnsureScenes(BootstrapScene, SandboxScene);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Creates the foundation scenes only if missing and appends them to the build list only if absent.</summary>
+        public static void EnsureScenes(string bootstrapPath, string sandboxPath)
+        {
+            CreateIfMissing(bootstrapPath, CreateBootstrap);
+            CreateIfMissing(sandboxPath, CreateSandbox);
+
+            var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            foreach (var path in new[] { bootstrapPath, sandboxPath })
+                if (!list.Exists(s => string.Equals(s.path, path, StringComparison.OrdinalIgnoreCase)))
+                    list.Add(new EditorBuildSettingsScene(path, true));
+            if (list.Count != EditorBuildSettings.scenes.Length)
+                EditorBuildSettings.scenes = list.ToArray();
+        }
+
+        static void CreateIfMissing(string path, Action build)
+        {
+            if (File.Exists(path)) return;
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            // NewScene(Single) would drop open scenes; Unity won't add a scene beside an untitled one, so refuse rather than lose work.
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var open = SceneManager.GetSceneAt(i);
+                if (open.isDirty)
+                    throw new InvalidOperationException($"Foundation setup aborted: scene '{(open.name == "" ? "Untitled" : open.name)}' has unsaved changes. Save or close it, then run setup again.");
+            }
+            var openScenes = EditorSceneManager.GetSceneManagerSetup();
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            build();
+            EditorSceneManager.SaveScene(scene, path);
+            EditorSceneManager.RestoreSceneManagerSetup(openScenes);
         }
 
         static void SetupUrp()
@@ -58,7 +85,12 @@ namespace Worldtree.Editor
         static void SetProjectSettings()
         {
             Set("ProjectSettings/ProjectSettings.asset", "activeInputHandler", p => p.intValue = 1); // Input System only; needs editor restart
-            Set("ProjectSettings/TimeManager.asset", "Fixed Timestep", p => p.floatValue = 1f / 60f);
+            // Fixed Timestep is a rational (ticks / ticks-per-second), not a float: 141120000 ticks/s divides 1/60 s exactly.
+            Set("ProjectSettings/TimeManager.asset", "Fixed Timestep.m_Count", p => p.longValue = 141120000L / 60);
+            Set("ProjectSettings/TimeManager.asset", "Fixed Timestep.m_Rate.m_Numerator", p => p.longValue = 141120000L);
+            Set("ProjectSettings/TimeManager.asset", "Fixed Timestep.m_Rate.m_Denominator", p => p.longValue = 1);
+            PlayerSettings.productName = "Worldtree Legacy";
+            PlayerSettings.companyName = "Siregi"; // chosen by the project owner
             Set("ProjectSettings/EditorSettings.asset", "m_SerializationMode", p => p.intValue = 2); // Force Text
         }
 
@@ -69,18 +101,13 @@ namespace Worldtree.Editor
             if (prop == null) { Debug.LogError($"{path}: property '{property}' not found"); return; }
             set(prop);
             obj.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(obj.targetObject);
         }
 
-        static void CreateBootstrap(string path)
-        {
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            new GameObject("Bootstrap").AddComponent<Bootstrap>();
-            EditorSceneManager.SaveScene(scene, path);
-        }
+        static void CreateBootstrap() => new GameObject("Bootstrap").AddComponent<Bootstrap>();
 
-        static void CreateSandbox(string path)
+        static void CreateSandbox()
         {
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var cam = new GameObject("Main Camera") { tag = "MainCamera" };
             cam.AddComponent<Camera>().orthographic = true;
             cam.AddComponent<CinemachineBrain>();
@@ -99,7 +126,6 @@ namespace Worldtree.Editor
             ground.name = "Ground";
             ground.transform.localScale = new Vector3(20, 1, 2);
             ground.transform.position = new Vector3(0, -0.5f, 0);
-            EditorSceneManager.SaveScene(scene, path);
         }
 
         public static void BuildWindows()
