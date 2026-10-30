@@ -132,7 +132,7 @@ namespace Worldtree.Editor
         {
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { BootstrapScene, SandboxScene },
+                scenes = Array.ConvertAll(Array.FindAll(EditorBuildSettings.scenes, scene => scene.enabled), scene => scene.path),
                 locationPathName = "Builds/Windows/WorldtreeLegacy.exe",
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.Development,

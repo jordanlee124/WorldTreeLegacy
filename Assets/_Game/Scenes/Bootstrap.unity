@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 235e43d4d6822304d904bf25e823bcc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Worldtree.Presentation::Worldtree.Presentation.Bootstrap
-  firstScene: Sandbox
+  firstScene: Graybox
 --- !u!4 &1566872363
 Transform:
   m_ObjectHideFlags: 0
