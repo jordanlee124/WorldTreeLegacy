@@ -47,14 +47,14 @@ namespace Worldtree.Tests
             savedBackground = InputSystem.settings.backgroundBehavior;
             InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
             keyboard = InputSystem.AddDevice<Keyboard>();
-            savedFrameRate = Application.targetFrameRate;
+            savedFrameRate = UnityEngine.Application.targetFrameRate;
             savedVSync = QualitySettings.vSyncCount;
         }
 
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            Application.targetFrameRate = savedFrameRate;
+            UnityEngine.Application.targetFrameRate = savedFrameRate;
             QualitySettings.vSyncCount = savedVSync;
             InputSystem.RemoveDevice(keyboard);
             if (savedBackground.HasValue) InputSystem.settings.backgroundBehavior = savedBackground.Value;
@@ -111,7 +111,7 @@ namespace Worldtree.Tests
         public IEnumerator RunningRight_CameraHasNoJitter_AndPlayerStaysVisible([Values(144, 30)] int targetFps)
         {
             QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = targetFps;
+            UnityEngine.Application.targetFrameRate = targetFps;
             yield return Steps(30);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.D));
 
