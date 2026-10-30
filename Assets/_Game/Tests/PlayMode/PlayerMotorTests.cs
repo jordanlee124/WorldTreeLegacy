@@ -228,6 +228,24 @@ namespace Worldtree.Tests
         }
 
         [UnityTest]
+        public IEnumerator FallResetZone_ReturnsPlayerToSpawn_AndRaisesRespawned()
+        {
+            var zone = Block("Zone", new Vector3(150, -3, 0), new Vector3(20, 2, 4)); // no floor out here
+            extras.Add(zone);
+            zone.GetComponent<Collider>().isTrigger = true;
+            zone.AddComponent<FallResetZone>();
+            SpawnPlayer(new Vector3(150, 2f, 0));
+            motor.FallResetY = -1000f; // only the zone can reset
+            var delta = Vector3.zero;
+            motor.Respawned += d => delta = d;
+            var t = 0;
+            while (motor.FallResets == 0 && t++ < 300) yield return Steps(1);
+            Assert.AreEqual(1, motor.FallResets);
+            Assert.AreEqual(2f, body.position.y, 0.1f);
+            Assert.Greater(delta.y, 0f, "offset points from the zone back up to the spawn");
+        }
+
+        [UnityTest]
         public IEnumerator FallingIntoThePit_ResetsToSpawn()
         {
             SpawnPlayer(new Vector3(150, 2f, 0)); // beyond the floor's end: nothing to land on

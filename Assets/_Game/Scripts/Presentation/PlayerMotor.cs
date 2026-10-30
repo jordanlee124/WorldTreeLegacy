@@ -36,6 +36,9 @@ namespace Worldtree.Presentation
         public MovementModel Model => model;
         public int FallResets { get; private set; }
 
+        /// <summary>Raised after a respawn with the teleport offset; the camera uses it to avoid gliding.</summary>
+        public event System.Action<Vector3> Respawned;
+
         // Set before the component is enabled (e.g. on an inactive GameObject), same as the serialized fields.
         public MovementConfigAsset ConfigAsset { get => configAsset; set => configAsset = value; }
         public InputActionAsset InputActions { get => inputActions; set => inputActions = value; }
@@ -111,12 +114,14 @@ namespace Worldtree.Presentation
             if (body.position.y < fallResetY) Respawn();
         }
 
-        void Respawn()
+        public void Respawn()
         {
+            var delta = spawn - body.position;
             body.position = spawn;
             body.linearVelocity = Vector3.zero;
             model.Reset();
             FallResets++;
+            Respawned?.Invoke(delta);
         }
 
         /// <summary>

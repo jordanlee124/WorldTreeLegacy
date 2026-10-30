@@ -14,5 +14,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/MovementTest.unity
     guid: 363de9ab498d9384d9c1afbbcc1cf263
+  - enabled: 1
+    path: Assets/_Game/Scenes/Graybox.unity
+    guid: cdc3428694305a247ab3e9e4b4c42704
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
