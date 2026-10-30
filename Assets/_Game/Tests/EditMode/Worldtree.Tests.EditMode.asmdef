@@ -1,7 +1,7 @@
 {
   "name": "Worldtree.Tests.EditMode",
   "rootNamespace": "Worldtree.Tests",
-  "references": ["Worldtree.Domain", "Worldtree.Application", "Worldtree.Editor", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "references": ["Worldtree.Domain", "Worldtree.Application", "Worldtree.Infrastructure", "Worldtree.Editor", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
   "precompiledReferences": ["nunit.framework.dll"],
