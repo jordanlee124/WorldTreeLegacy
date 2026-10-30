@@ -20,6 +20,10 @@ namespace Worldtree.Presentation
         [SerializeField, Range(0f, 89f)] float maxGroundSlope = 50f;
         [SerializeField] LayerMask groundLayers = ~0;
 
+        const float OneWayTopTolerance = 0.1f; // rising feet snap up by at most this when they reach the top
+        const float OneWayReach = 1f;          // > the farthest the body travels in one step (25 m/s * 1/60 = 0.42)
+
+        readonly Collider[] nearby = new Collider[16];
         readonly MovementModel model = new MovementModel();
         Rigidbody body;
         CapsuleCollider capsule;
@@ -96,6 +100,7 @@ namespace Worldtree.Presentation
 
         void FixedUpdate()
         {
+            UpdateOneWayPlatforms();
             var v = body.linearVelocity;
             model.VelocityX = v.x;
             model.VelocityY = v.y;
@@ -114,6 +119,26 @@ namespace Worldtree.Presentation
             FallResets++;
         }
 
+        /// <summary>
+        /// A one-way platform is solid only while the feet are at or above its top. Casts ignore Physics.IgnoreCollision,
+        /// so this runs before every step, while platforms are within a step's travel of the player.
+        /// </summary>
+        void UpdateOneWayPlatforms()
+        {
+            var feetY = body.position.y + capsule.center.y - capsule.height * 0.5f;
+            var fallPerStep = Mathf.Max(0f, -body.linearVelocity.y) * Time.fixedDeltaTime;
+            var half = new Vector3(capsule.radius + OneWayReach, capsule.height * 0.5f + OneWayReach, 1f);
+            var count = Physics.OverlapBoxNonAlloc(body.position + capsule.center, half, nearby, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (!nearby[i].TryGetComponent<OneWayPlatform>(out _)) continue;
+                // Resting feet sit within the contact offset of the top; a fast faller sinks up to one step's travel into it
+                // before contact resolves. Both must still count as "above", or the landing is mistaken for a pass from below.
+                var ignore = feetY < nearby[i].bounds.max.y - OneWayTopTolerance - fallPerStep;
+                if (Physics.GetIgnoreCollision(capsule, nearby[i]) != ignore) Physics.IgnoreCollision(capsule, nearby[i], ignore);
+            }
+        }
+
         bool IsGrounded()
         {
             var radius = capsule.radius;
@@ -121,6 +146,7 @@ namespace Worldtree.Presentation
             // Starts slightly inside the player's own collider, which casts ignore; ground is tested by the sphere's lowest reach.
             return Physics.SphereCast(feet + Vector3.up * 0.02f, radius * 0.95f, Vector3.down, out var hit,
                        groundCheckDistance + 0.02f, groundLayers, QueryTriggerInteraction.Ignore)
+                   && !Physics.GetIgnoreCollision(capsule, hit.collider)
                    && hit.normal.y >= Mathf.Cos(maxGroundSlope * Mathf.Deg2Rad);
         }
     }

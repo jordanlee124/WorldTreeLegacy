@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -12,6 +13,7 @@ namespace Worldtree.Tests
         static readonly MovementConfig C = MovementConfig.Default;
         const float SingleApex = 13f * 13f / (2f * 35f); // JumpVelocity^2 / 2g for the default config
 
+        readonly List<GameObject> extras = new List<GameObject>(); // destroyed in TearDown so a failed assert cannot leak into the next test
         GameObject floor, wall, player;
         MovementConfigAsset config;
         PlayerMotor motor;
@@ -31,6 +33,8 @@ namespace Worldtree.Tests
         public void TearDown()
         {
             foreach (var go in new[] { floor, wall, player }) if (go != null) Object.Destroy(go);
+            foreach (var go in extras) if (go != null) Object.Destroy(go);
+            extras.Clear();
             if (config != null) Object.Destroy(config);
         }
 
@@ -164,6 +168,63 @@ namespace Worldtree.Tests
             Assert.AreEqual(0f, body.position.z, 1e-4f);
             Assert.IsTrue(body.constraints.HasFlag(RigidbodyConstraints.FreezePositionZ));
             Assert.IsTrue(body.constraints.HasFlag(RigidbodyConstraints.FreezeRotation));
+        }
+
+        GameObject OneWay(float topY)
+        {
+            var slab = Block("OneWay", new Vector3(0, topY - 0.25f, 0), new Vector3(6, 0.5f, 2));
+            slab.AddComponent<OneWayPlatform>();
+            extras.Add(slab);
+            return slab;
+        }
+
+        [UnityTest]
+        public IEnumerator OneWayPlatform_CanBeJumpedUpThrough_ThenStoodOn()
+        {
+            var slab = OneWay(1.8f);
+            SpawnPlayer(new Vector3(0, 1.01f, 0)); // standing under it, head inside the slab
+            yield return Settle();
+            motor.QueueJump();
+            yield return Steps(90);
+            // Capsule centre rests half a height (1 m) above the slab top.
+            Assert.AreEqual(1.8f + 1f, body.position.y, 0.05f, "should land on top of the platform");
+            Assert.IsTrue(motor.Model.Grounded);
+            yield return Steps(60);
+            Assert.AreEqual(1.8f + 1f, body.position.y, 0.05f, "must not sink through while standing");
+            Assert.Less(maxZDrift, 1e-4f);
+        }
+
+        [UnityTest]
+        public IEnumerator OneWayPlatform_TooLowAJump_FallsBackThrough()
+        {
+            var slab = OneWay(2.8f); // feet apex is about 2.4 m, below the top
+            SpawnPlayer(new Vector3(0, 1.01f, 0));
+            yield return Settle();
+            motor.QueueJump();
+            yield return Steps(90);
+            Assert.AreEqual(1f, body.position.y, 0.05f, "back on the floor");
+        }
+
+        [UnityTest]
+        public IEnumerator OneWayPlatform_FallingOntoItFromAbove_Lands()
+        {
+            var slab = OneWay(1.8f);
+            SpawnPlayer(new Vector3(0, 6f, 0));
+            yield return Steps(90);
+            Assert.AreEqual(1.8f + 1f, body.position.y, 0.05f);
+        }
+
+        [UnityTest]
+        public IEnumerator SolidBlock_StillBlocksFromBelow()
+        {
+            var slab = Block("Solid", new Vector3(0, 3.05f, 0), new Vector3(6, 0.5f, 2)); // underside at 2.8
+            extras.Add(slab);
+            SpawnPlayer(new Vector3(0, 1.01f, 0));
+            yield return Settle();
+            var peak = new[] { body.position.y };
+            motor.QueueJump();
+            yield return Apex(60, peak);
+            Assert.Less(peak[0], 1.9f, "head stops at the underside (centre <= 2.8 - 1); unobstructed it would reach 3.4");
         }
 
         [UnityTest]

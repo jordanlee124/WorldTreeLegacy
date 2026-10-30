@@ -50,6 +50,7 @@ namespace Worldtree.Tests
             Assert.NotNull(motor.InputActions.FindAction("Gameplay/Move"));
             Assert.NotNull(motor.InputActions.FindAction("Gameplay/Jump"));
             Assert.IsTrue(Camera.main.orthographic);
+            Assert.AreEqual(3, Object.FindObjectsByType<OneWayPlatform>(FindObjectsSortMode.None).Length, "the three ledges are one-way");
             yield return Steps(60);
             Assert.IsTrue(motor.Model.Grounded);
             Assert.AreEqual(0, motor.FallResets);

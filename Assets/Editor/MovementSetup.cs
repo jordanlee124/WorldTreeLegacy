@@ -74,9 +74,9 @@ namespace Worldtree.Editor
             Block("Ground Left", -4.5f, 0f, 15f, 1f);
             Block("Ground Right", 12f, 0f, 12f, 1f);
             Block("Wall", 15f, 3f, 1f, 3f);
-            Block("Ledge Single Jump", -6f, 1.5f, 3f, 0.5f);
-            Block("Ledge Double Jump", -1.5f, 3.8f, 3f, 0.5f);
-            Block("Ledge Unreachable", 10.5f, 6.5f, 3f, 0.5f);
+            Block("Ledge Single Jump", -6f, 1.5f, 3f, 0.5f, oneWay: true);
+            Block("Ledge Double Jump", -1.5f, 3.8f, 3f, 0.5f, oneWay: true);
+            Block("Ledge Unreachable", 10.5f, 6.5f, 3f, 0.5f, oneWay: true);
 
             var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             player.name = "Player";
@@ -92,12 +92,13 @@ namespace Worldtree.Editor
             new GameObject("Debug HUD").AddComponent<MovementDebugHud>().Motor = motor;
         }
 
-        static void Block(string name, float centerX, float topY, float width, float height)
+        static void Block(string name, float centerX, float topY, float width, float height, bool oneWay = false)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
             go.transform.localScale = new Vector3(width, height, 2);
             go.transform.position = new Vector3(centerX, topY - height / 2f, 0);
+            if (oneWay) go.AddComponent<OneWayPlatform>();
         }
     }
 }
