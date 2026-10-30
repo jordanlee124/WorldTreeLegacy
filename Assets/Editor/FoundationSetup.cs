@@ -45,7 +45,7 @@ namespace Worldtree.Editor
                 EditorBuildSettings.scenes = list.ToArray();
         }
 
-        static void CreateIfMissing(string path, Action build)
+        public static void CreateIfMissing(string path, Action build)
         {
             if (File.Exists(path)) return;
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -60,7 +60,7 @@ namespace Worldtree.Editor
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             build();
             EditorSceneManager.SaveScene(scene, path);
-            EditorSceneManager.RestoreSceneManagerSetup(openScenes);
+            if (openScenes.Length > 0) EditorSceneManager.RestoreSceneManagerSetup(openScenes); // batch mode can start with none, which Restore rejects
         }
 
         static void SetupUrp()
