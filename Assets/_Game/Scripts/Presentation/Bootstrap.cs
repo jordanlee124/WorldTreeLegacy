@@ -7,7 +7,7 @@ namespace Worldtree.Presentation
     /// <summary>Entry point: applies global simulation settings, then loads the first scene.</summary>
     public sealed class Bootstrap : MonoBehaviour
     {
-        [SerializeField] string firstScene = "Sandbox";
+        [SerializeField] string firstScene = "Graybox";
 
         void Awake()
         {
