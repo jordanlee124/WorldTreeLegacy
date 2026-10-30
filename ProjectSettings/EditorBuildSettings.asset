@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/Sandbox.unity
     guid: d7eeb34c6a3ad1d4697d05a98526dd7d
+  - enabled: 1
+    path: Assets/_Game/Scenes/MovementTest.unity
+    guid: 363de9ab498d9384d9c1afbbcc1cf263
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

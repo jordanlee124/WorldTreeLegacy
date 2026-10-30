@@ -1,7 +1,7 @@
 {
   "name": "Worldtree.Tests.PlayMode",
   "rootNamespace": "Worldtree.Tests",
-  "references": ["Worldtree.Domain", "Worldtree.Application", "Worldtree.Infrastructure", "Worldtree.Presentation", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "references": ["Worldtree.Domain", "Worldtree.Application", "Worldtree.Infrastructure", "Worldtree.Presentation", "Unity.InputSystem", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
   "overrideReferences": true,
   "precompiledReferences": ["nunit.framework.dll"],
   "autoReferenced": false,
