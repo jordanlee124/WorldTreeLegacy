@@ -78,21 +78,26 @@ namespace Worldtree.Editor
             Block("Ledge Double Jump", -1.5f, 3.8f, 3f, 0.5f, oneWay: true);
             Block("Ledge Unreachable", 10.5f, 6.5f, 3f, 0.5f, oneWay: true);
 
+            var motor = CreatePlayer(new Vector3(-10.5f, 1.01f, 0), -8f);
+            new GameObject("Debug HUD").AddComponent<MovementDebugHud>().Motor = motor;
+        }
+
+        public static PlayerMotor CreatePlayer(Vector3 position, float fallResetY)
+        {
             var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             player.name = "Player";
             player.SetActive(false); // so PlayerMotor.Awake sees its fields
-            player.transform.position = new Vector3(-10.5f, 1.01f, 0);
+            player.transform.position = position;
             player.AddComponent<Rigidbody>();
             var motor = player.AddComponent<PlayerMotor>();
             motor.ConfigAsset = AssetDatabase.LoadAssetAtPath<MovementConfigAsset>(ConfigPath);
             motor.InputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputPath);
-            motor.FallResetY = -8f;
+            motor.FallResetY = fallResetY;
             player.SetActive(true);
-
-            new GameObject("Debug HUD").AddComponent<MovementDebugHud>().Motor = motor;
+            return motor;
         }
 
-        static void Block(string name, float centerX, float topY, float width, float height, bool oneWay = false)
+        public static void Block(string name, float centerX, float topY, float width, float height, bool oneWay = false)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
