@@ -9,3 +9,8 @@
 .idea/
 *.csproj
 *.sln
+
+*.blend1
+[Mm]emoryCaptures/
+[Rr]ecordings/
+*.dmp

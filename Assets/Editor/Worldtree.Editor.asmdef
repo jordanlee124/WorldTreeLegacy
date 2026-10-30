@@ -1,0 +1,7 @@
+{
+  "name": "Worldtree.Editor",
+  "rootNamespace": "Worldtree.Editor",
+  "references": ["Worldtree.Presentation", "Unity.Cinemachine", "Unity.RenderPipelines.Universal.Runtime"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": false
+}

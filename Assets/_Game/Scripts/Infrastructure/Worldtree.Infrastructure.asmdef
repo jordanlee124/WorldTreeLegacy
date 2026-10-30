@@ -1,0 +1,6 @@
+{
+  "name": "Worldtree.Infrastructure",
+  "rootNamespace": "Worldtree.Infrastructure",
+  "references": ["Worldtree.Domain"],
+  "autoReferenced": false
+}

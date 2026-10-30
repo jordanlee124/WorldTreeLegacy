@@ -1,0 +1,6 @@
+{
+  "name": "Worldtree.Presentation",
+  "rootNamespace": "Worldtree.Presentation",
+  "references": ["Worldtree.Domain", "Worldtree.Application", "Unity.Cinemachine", "Unity.InputSystem"],
+  "autoReferenced": false
+}
